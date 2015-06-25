@@ -1,3 +1,6 @@
+var argv = require('minimist')(process.argv.slice(2));
+var token = argv.token;
+
 var noaaForecaster = require('../index');
 
 var obj = {
@@ -8,7 +11,7 @@ var obj = {
   includemetadata: false
 };
 
-noaaForecaster.setToken();
+noaaForecaster.setToken(token);
 noaaForecaster.getForecast(obj)
   .then(function(results) {
     console.log('DEBUG: results', results.data);

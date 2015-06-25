@@ -24,5 +24,8 @@
   "dependencies": {
     "bluebird": "^2.9.30",
     "restling": "^0.9.1"
+  },
+  "devDependencies": {
+    "minimist": "^1.1.1"
   }
 }
