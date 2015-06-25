@@ -1,0 +1,24 @@
+{
+  "name": "noaa-forecasts",
+  "version": "0.0.1",
+  "description": "A Promised-based library for fetching forecast data from NOAA",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thataustin/noaa-forecasts.git"
+  },
+  "keywords": [
+    "noaa",
+    "forecast",
+    "weather"
+  ],
+  "author": "thataustin@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thataustin/noaa-forecasts/issues"
+  },
+  "homepage": "https://github.com/thataustin/noaa-forecasts"
+}
