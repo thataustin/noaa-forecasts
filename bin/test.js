@@ -1,21 +1,24 @@
 var argv = require('minimist')(process.argv.slice(2));
-var token = argv.token;
-
+var moment = require('moment');
 var noaaForecaster = require('../index');
+var inspect = require('util').inspect;
 
 var obj = {
-  datasetid: 'GHCND',
-  stationid: 'GHCND:US1NCBC0005',
-  startdate: '2015-05-01',
-  enddate: '2015-05-01',
-  includemetadata: false
+  listLatLon: '38.99,-77.01 37.7833,-122.4167',
+  product: 'time-series',
+  begin: moment().format(),
+  end: moment().add(3, 'days').format(),
+
+  // Liquid Precipitation Amount
+  qpf: 'qpf',
+
+  // 12 hour probability of precipitation
+  pop12: 'pop12'
 };
 
+var token = argv.token;
 noaaForecaster.setToken(token);
 noaaForecaster.getForecast(obj)
   .then(function(results) {
-    console.log('DEBUG: results', results.data);
-  })
-  .catch(function (err) {
-    console.log('DEBUG: err', err);
+    console.log(inspect(results, { colors: true, depth: Infinity }));
   });

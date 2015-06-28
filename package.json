@@ -23,7 +23,11 @@
   "homepage": "https://github.com/thataustin/noaa-forecasts",
   "dependencies": {
     "bluebird": "^2.9.30",
-    "restling": "^0.9.1"
+    "dwml-to-json": "0.0.3",
+    "moment": "^2.10.3",
+    "restling": "^0.9.1",
+    "underscore": "^1.8.3",
+    "xml-parser": "^1.2.1"
   },
   "devDependencies": {
     "minimist": "^1.1.1"
