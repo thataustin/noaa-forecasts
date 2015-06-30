@@ -4,14 +4,15 @@ var noaaForecaster = require('../index');
 var inspect = require('util').inspect;
 
 var myBusinessObjects = [
-  {project_id: 1, lat: '38.99', lon: '-77.01'},
-  {project_id: 2, lat: '37.7833', lon: '-122.4167'}
+  {project_id: 1, lat: 37.8689206763912, lon: -122.303384194185},
+  {project_id: 2, lat: 37.8678778913623, lon: -122.302314443276},
+  {project_id: 3, lat: 37.8678778913624, lon: -122.302314443277}
 ];
 
 var forecastDetails = {
   product: 'time-series',
-  begin: moment().format(),
-  end: moment().add(3, 'days').format(),
+  begin: moment().format('YYYY-MM-DDTHH:mm:ss'),
+  end: moment().add(3, 'days').format('YYYY-MM-DDTHH:mm:ss'),
   qpf: 'qpf', // Liquid Precipitation Amount
   pop12: 'pop12' // 12 hour probability of precipitation
 };
