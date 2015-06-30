@@ -1,6 +1,6 @@
 {
   "name": "noaa-forecasts",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A Promised-based library for fetching JSON forecast data from NOAA",
   "main": "index.js",
   "scripts": {
