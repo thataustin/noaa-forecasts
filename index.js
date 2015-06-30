@@ -41,7 +41,7 @@ var noaaForecaster = {
       })
       .then(function(forecastPerPoint) {
         return this._attachForecastsToBusinessObjects(geoBusinessObjects, forecastPerPoint);
-      })
+      });
   },
 
   _attachForecastsToBusinessObjects: function (geoBusinessObjects, forecastPerPoint) {
@@ -101,9 +101,17 @@ var noaaForecaster = {
 
   _makeCall: function (url) {
     return restling.get(url, {headers: this._getHeaders()} )
-      .then(function(results) {
-        console.log('DEBUG: results', results);
-        return dwmlParser.parse(results.data);
+      .then(function(forecasts) {
+        if (! (forecasts && forecasts.data) ) {
+          throw new Error('No forecasts found');
+        }
+
+        var forecastData = forecasts.data;
+
+        if (/^<error>/.test(forecastData) ) {
+          throw new Error(forecastData);
+        }
+        return dwmlParser.parse(forecastData);
       });
   },
 

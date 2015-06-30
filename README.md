@@ -49,7 +49,7 @@ The problem with using this library as a simple JSON formatter occurs when you h
         { project: 1, lat: '33.00', lon: '-127.00' },
         { project: 2, lat: '33.00', lon: '-127.10' }
     ]
-    
+
 Where `project: 1` has meaning to you (though it has none to the NOAA API), and you'd really just like to attach a forecast to that `project: 1`.
 
 Your best attempts to make an API call for both of those points (in the same call) will get you something back like this:
@@ -58,7 +58,7 @@ Your best attempts to make an API call for both of those points (in the same cal
         { 'Point1': /** forecast data **/, ... }
         { 'Point2': /** forecast data **/, ... }
     ]
-    
+
 That is, NOAA will name the points to Point1, Point2, etc... and give you no indication of which business object of yours the forecast is for.  You'd have to do either a comparison of the lat/lon's or something similar to what this method will do for you - carefully remember which points you passed in, in order, and then match them up with Point1, Point2, etc (which are also ordered).  Or, you can let this method do all that for you.
 
 An example:
@@ -66,22 +66,22 @@ An example:
     var moment = require('moment');
     var noaaForecaster = require('../index');
     var inspect = require('util').inspect;
-    
+
     // forecast details are applied to all the business objects.  The goal being to only make 1 request, for efficiency
     var forecastDetails = {
       product: 'time-series',
       begin: moment().format(),
       end: moment().add(3, 'days').format(),
       qpf: 'qpf', // Liquid Precipitation Amount
-      pop12: 'pop12' // 12 hour probability of precipitation    
+      pop12: 'pop12' // 12 hour probability of precipitation
     };
-    
+
     // each object must have a lat and a lon
     var myGeoBusinessObjects = [
       { project: 1, lat: '38.99', lon: '-77.01' },
       { project: 2, lat: '38.99', lon: '-77.01' }
     ];
-    
+
     var token = 'XXXXX-XXXXXXXX-XXXXXXXX-XXXXXX;
     noaaForecaster.setToken(token);
     noaaForecaster.attachForecasts(myGeoBusinessObjects, forecastDetails)
