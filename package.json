@@ -1,7 +1,7 @@
 {
   "name": "noaa-forecasts",
   "version": "0.0.1",
-  "description": "A Promised-based library for fetching forecast data from NOAA",
+  "description": "A Promised-based library for fetching JSON forecast data from NOAA",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -26,8 +26,7 @@
     "dwml-to-json": "0.0.3",
     "moment": "^2.10.3",
     "restling": "^0.9.1",
-    "underscore": "^1.8.3",
-    "xml-parser": "^1.2.1"
+    "underscore": "^1.8.3"
   },
   "devDependencies": {
     "minimist": "^1.1.1"
