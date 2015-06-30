@@ -1,4 +1,5 @@
 var restling = require('restling');
+var _ = require('underscore');
 var BluebirdPromise = require('bluebird');
 var querystring = require('querystring');
 var url = require('url');
@@ -15,16 +16,72 @@ var noaaForecaster = {
   },
 
   /**
-   * @param options {Object} - any options that go with the given noaa endpoint per their docs
+   * @param options {Object} - NOAA api params describing what sort of environmental data to retrieve
    * @return {String} - urlString
    */
   getForecast: function (options) {
     if (!this._token) { return BluebirdPromise.reject('Must call setToken before calling get.'); }
     var url = this._convertOptionsToUrlString('data', options);
-    return restling.get(url, {headers: this._getHeaders()} )
-      .then(function(results) {
-        return dwmlParser.parse(results.data);
-      });
+    return this._makeCall(url);
+  },
+
+  /**
+   * @param geoBusinessObjects {Array} - each object must have a lat and a lon
+   * @param forecastDetails {Object} - NOAA api params describing what sort of environmental data to retrieve
+   */
+  attachForecasts: function (geoBusinessObjects, forecastDetails) {
+    if (!this._token) { return BluebirdPromise.reject('Must call setToken before calling get.'); }
+
+    return this._validateGeoObjects(geoBusinessObjects).bind(this)
+      .then(function() {
+        var listLatLon = this._getLatLonList(geoBusinessObjects);
+        var options = _.extend({}, forecastDetails, { listLatLon: listLatLon});
+        var url = this._convertOptionsToUrlString('data', options);
+        return this._makeCall(url);
+      })
+      .then(function(forecastPerPoint) {
+        return this._attachForecastsToBusinessObjects(geoBusinessObjects, forecastPerPoint);
+      })
+  },
+
+  _attachForecastsToBusinessObjects: function (geoBusinessObjects, forecastPerPoint) {
+    var i = 1, curr;
+
+    // This is tricky, but start at one, this time so we can use `i` as
+    // part of the string in the point name (eg, point1)
+    while (i <= geoBusinessObjects.length) {
+      curr = geoBusinessObjects[i - 1];
+      curr.forecast = forecastPerPoint['point' + i];
+      i++;
+    }
+
+    return geoBusinessObjects;
+  },
+
+  _validateGeoObjects: function (geoBusinessObjects) {
+    return BluebirdPromise.map(geoBusinessObjects, function (obj) {
+      if (!obj.lat && obj.lon) {
+        throw new Error('All geo business objects must have a lat and a lon');
+      }
+    });
+  },
+
+  /**
+   * @param geoBusinessObjects
+   * @return {String} - space-separated lat/lon list formatted for NOAA REST API
+   *   eg: '37.00,-127.00 36.00,-127.10'
+   */
+  _getLatLonList: function (geoBusinessObjects) {
+    var list = [], i = 0, curr;
+
+    // We must maintain the order as we build the string, so loop through old-school
+    while (i < geoBusinessObjects.length) {
+      curr = geoBusinessObjects[i];
+      list.push([curr.lat, curr.lon].join(','));
+      i++;
+    }
+
+    return list.join(' ');
   },
 
   _convertOptionsToUrlString: function (noaaEndpoint, options) {
@@ -42,10 +99,16 @@ var noaaForecaster = {
     return url.format(urlObj);
   },
 
+  _makeCall: function (url) {
+    return restling.get(url, {headers: this._getHeaders()} )
+      .then(function(results) {
+        console.log('DEBUG: results', results);
+        return dwmlParser.parse(results.data);
+      });
+  },
+
   _getHeaders: function () {
-    return {
-      token: this._token
-    }
+    return { token: this._token};
   }
 };
 
