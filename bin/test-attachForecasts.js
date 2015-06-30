@@ -10,7 +10,6 @@ var myBusinessObjects = [
 ];
 
 var forecastDetails = {
-  product: 'time-series',
   begin: moment().format('YYYY-MM-DDTHH:mm:ss'),
   end: moment().add(3, 'days').format('YYYY-MM-DDTHH:mm:ss'),
   qpf: 'qpf', // Liquid Precipitation Amount

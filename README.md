@@ -26,7 +26,7 @@ Here's an example from the test file in this code base:
     
     var obj = {
       listLatLon: '38.99,-77.01 37.7833,-122.4167',
-      product: 'time-series',
+      product: 'time-series', // this is a default, it's not actually required
       begin: moment().format('YYYY-MM-DDTHH:mm:ss'),
       end: moment().add(3, 'days').format('YYYY-MM-DDTHH:mm:ss'),
       qpf: 'qpf', // first elementInputName - Liquid Precipitation Amount
@@ -69,7 +69,7 @@ An example:
 
     // forecast details are applied to all the business objects.  The goal being to only make 1 request, for efficiency
     var forecastDetails = {
-      product: 'time-series',
+      product: 'time-series',  // this is a default, it's not actually required
       begin: moment().format(),
       end: moment().add(3, 'days').format(),
       qpf: 'qpf', // Liquid Precipitation Amount

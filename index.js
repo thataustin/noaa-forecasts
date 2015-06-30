@@ -21,6 +21,7 @@ var noaaForecaster = {
    */
   getForecast: function (options) {
     if (!this._token) { return BluebirdPromise.reject('Must call setToken before calling get.'); }
+    options = this._addDefaultOptions(options);
     var url = this._convertOptionsToUrlString('data', options);
     return this._makeCall(url);
   },
@@ -31,6 +32,7 @@ var noaaForecaster = {
    */
   attachForecasts: function (geoBusinessObjects, forecastDetails) {
     if (!this._token) { return BluebirdPromise.reject('Must call setToken before calling get.'); }
+    forecastDetails = this._addDefaultOptions(forecastDetails);
 
     return this._validateGeoObjects(geoBusinessObjects).bind(this)
       .then(function() {
@@ -42,6 +44,11 @@ var noaaForecaster = {
       .then(function(forecastPerPoint) {
         return this._attachForecastsToBusinessObjects(geoBusinessObjects, forecastPerPoint);
       });
+  },
+
+  _addDefaultOptions: function (options) {
+    options.product = options.product || 'time-series';
+    return options;
   },
 
   _attachForecastsToBusinessObjects: function (geoBusinessObjects, forecastPerPoint) {
