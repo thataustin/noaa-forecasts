@@ -52,6 +52,9 @@ var noaaForecaster = {
   },
 
   _attachForecastsToBusinessObjects: function (geoBusinessObjects, forecastPerPoint) {
+    console.log(forecastPerPoint);
+    console.log('geoBusinessObjects length:', geoBusinessObjects.length, 'forecastPerPoint num keys:', _.keys(forecastPerPoint).length);
+    
     var i = 1, curr;
 
     // This is tricky, but start at one, this time so we can use `i` as
