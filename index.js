@@ -65,14 +65,27 @@ var noaaForecaster = {
     var i;
     for (i=0; i<geoBusinessObjects.length; i+=chunkSize) {
 
-      var j = 1, curr;
+      var j = 1, curr, key, loc;
       var geoBusinessObjectsChunk = geoBusinessObjects.slice(i,i+chunkSize)
+
+      var forecastsForThisChunk = forecastPerPointInChunks[i / chunkSize];
+      var forecastByLoc = {};
+      _.each(forecastsForThisChunk, (forecastForPoint, point) => {
+        loc = forecastForPoint.location;
+        forecastByLoc[loc.latitude + ',' + loc.longitude] = forecastForPoint;
+      });
+
 
       // This is tricky, but start at one, this time so we can use `j` as
       // part of the string in the point name (eg, point1)
       while (j <= geoBusinessObjectsChunk.length) {
         curr = geoBusinessObjectsChunk[j - 1];
-        curr.forecast = forecastPerPointInChunks[i / chunkSize]['point' + j];
+        key = curr.lat.toFixed(2) + ',' + curr.lon.toFixed(2);
+
+        if (_.has(forecastByLoc, key)) {
+          curr.forecast = forecastByLoc[key];
+        }
+
         j++;
       }
     }
@@ -123,6 +136,7 @@ var noaaForecaster = {
 
   _makeCall: function (url) {
     return restling.get(url, {headers: this._getHeaders()} )
+      .bind(this)
       .then(function(forecasts) {
         if (! (forecasts && forecasts.data) ) {
           throw new Error('No forecasts found');
@@ -131,10 +145,31 @@ var noaaForecaster = {
         var forecastData = forecasts.data;
 
         if (/^<error>/.test(forecastData) ) {
+          var newUrl = this._parseError(forecastData, url);
+          if (newUrl) {
+            return this._makeCall(newUrl);
+          }
+
           throw new Error(forecastData);
         }
         return dwmlParser.parse(forecastData);
       });
+  },
+
+  _parseError: function (forecastData, url) {
+    var badLatLon = /^<error><h2>ERROR<\/h2><pre>Point with latitude .* longitude .* is not on an NDFD grid/.exec(forecastData);
+    if (badLatLon && badLatLon.length) {
+      var latIndex = badLatLon[0].indexOf('latitude') + 10;
+      var lonIndex = badLatLon[0].indexOf('longitude') + 11;
+      var lengthOfLat = badLatLon[0].indexOf('longitude') - latIndex - 2;
+      var lengthOfLon = badLatLon[0].indexOf('is not on an NDFD grid') - lonIndex - 2;
+      var lat = badLatLon[0].substr(latIndex, lengthOfLat);
+      var lon = badLatLon[0].substr(lonIndex, lengthOfLon);
+      var badLatLonStr = ' ' + lat + ',' + lon;
+      console.log('Found that' + badLatLonStr + ' is not a valid latLon pair for NOAA (probably outside U.S.A.). Reprocessing without it.');
+      url = url.replace(badLatLonStr, '');
+      return url;
+    }
   },
 
   _getHeaders: function () {
