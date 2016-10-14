@@ -157,6 +157,7 @@ var noaaForecaster = {
   },
 
   _parseError: function (forecastData, url) {
+    console.log(forecastData);
     var badLatLon = /^<error><h2>ERROR<\/h2><pre>Point with latitude .* longitude .* is not on an NDFD grid/.exec(forecastData);
     if (badLatLon && badLatLon.length) {
       var latIndex = badLatLon[0].indexOf('latitude') + 10;
@@ -165,9 +166,14 @@ var noaaForecaster = {
       var lengthOfLon = badLatLon[0].indexOf('is not on an NDFD grid') - lonIndex - 2;
       var lat = badLatLon[0].substr(latIndex, lengthOfLat);
       var lon = badLatLon[0].substr(lonIndex, lengthOfLon);
-      var badLatLonStr = ' ' + lat + ',' + lon;
-      console.log('Found that' + badLatLonStr + ' is not a valid latLon pair for NOAA (probably outside U.S.A.). Reprocessing without it.');
-      url = url.replace(badLatLonStr, '');
+      var badLatLonStrOpt1 = ' ' + lat + ',' + lon;
+      var badLatLonStrOpt2= '=' + lat + ',' + lon + ' ';
+      console.log('Found that' + badLatLonStrOpt1 + ' is not a valid latLon pair for NOAA (probably outside U.S.A.). Reprocessing without it.');
+      if (url.indexOf(badLatLonStrOpt1) > 0) {
+        url = url.replace(badLatLonStrOpt1, '');
+      } else {
+        url = url.replace(badLatLonStrOpt2, '=');
+      }
       return url;
     }
   },
