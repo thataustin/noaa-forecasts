@@ -31,17 +31,14 @@ var noaaForecaster = {
    * @param forecastDetails {Object} - NOAA api params describing what sort of environmental data to retrieve
    */
   attachForecasts: function (geoBusinessObjects, forecastDetails) {
-    var chunkSize = 200;
     if (!this._token) { return BluebirdPromise.reject('Must call setToken before calling get.'); }
     forecastDetails = this._addDefaultOptions(forecastDetails);
 
     return this._validateGeoObjects(geoBusinessObjects).bind(this)
       .then(function() {
-        return this._getForecastPerPoint(geoBusinessObjects, forecastDetails, chunkSize);
+        return this._getForecastPerPoint(geoBusinessObjects, forecastDetails);
       })
-      .then(function(forecastPerPointInChunks) {
-        return this._attachForecastsToBusinessObjects(geoBusinessObjects, forecastPerPointInChunks, chunkSize);
-      });
+      .then(this._attachForecastsToBusinessObjects.bind(this, geoBusinessObjects));
   },
 
   _addDefaultOptions: function (options) {
@@ -49,7 +46,8 @@ var noaaForecaster = {
     return options;
   },
 
-  _getForecastPerPoint(geoBusinessObjects, forecastDetails, chunkSize) {
+  _getForecastPerPoint(geoBusinessObjects, forecastDetails) {
+    var chunkSize = 200;
     var i, forecastPerPointInChunks = [];
     for ( i = 0; i < geoBusinessObjects.length; i += chunkSize) {
       var listLatLon = this._getLatLonList(geoBusinessObjects.slice(i,i+chunkSize));
@@ -58,37 +56,35 @@ var noaaForecaster = {
       forecastPerPointInChunks.push(this._makeCall(url));
     }
 
-    return BluebirdPromise.all(forecastPerPointInChunks);
+    return BluebirdPromise.all(forecastPerPointInChunks)
+      .then(_.flatten)
+      .then(_.first);
   },
 
-  _attachForecastsToBusinessObjects: function (geoBusinessObjects, forecastPerPointInChunks, chunkSize) {
-    var i;
-    for (i=0; i<geoBusinessObjects.length; i+=chunkSize) {
+  _attachForecastsToBusinessObjects: function (geoBusinessObjects, forecastPerPoint) {
+    var j = 1, curr, key, loc;
 
-      var j = 1, curr, key, loc;
-      var geoBusinessObjectsChunk = geoBusinessObjects.slice(i,i+chunkSize)
-
-      var forecastsForThisChunk = forecastPerPointInChunks[i / chunkSize];
-      var forecastByLoc = {};
-      _.each(forecastsForThisChunk, (forecastForPoint, point) => {
-        loc = forecastForPoint.location;
-        forecastByLoc[loc.latitude + ',' + loc.longitude] = forecastForPoint;
-      });
+    var forecastByLoc = {};
+    _.each(forecastPerPoint, (forecastForPoint, point) => {
+      console.log(forecastPerPoint)
+      loc = forecastForPoint.location;
+      forecastByLoc[loc.latitude + ',' + loc.longitude] = forecastForPoint;
+    });
 
 
-      // This is tricky, but start at one, this time so we can use `j` as
-      // part of the string in the point name (eg, point1)
-      while (j <= geoBusinessObjectsChunk.length) {
-        curr = geoBusinessObjectsChunk[j - 1];
-        key = curr.lat.toFixed(2) + ',' + curr.lon.toFixed(2);
+    // This is tricky, but start at one, this time so we can use `j` as
+    // part of the string in the point name (eg, point1)
+    while (j <= geoBusinessObjects.length) {
+      curr = geoBusinessObjects[j - 1];
+      key = curr.lat.toFixed(2) + ',' + curr.lon.toFixed(2);
 
-        if (_.has(forecastByLoc, key)) {
-          curr.forecast = forecastByLoc[key];
-        }
-
-        j++;
+      if (_.has(forecastByLoc, key)) {
+        curr.forecast = forecastByLoc[key];
       }
+
+      j++;
     }
+
 
     return geoBusinessObjects;
   },
